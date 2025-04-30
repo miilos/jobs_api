@@ -1,0 +1,16 @@
+{
+    "name": "milos/jobs-api",
+    "description": "jobs api",
+    "autoload": {
+        "psr-4": {
+            "Milos\\JobsApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Milos Popovic",
+            "email": "milos.pop.004@gmail.com"
+        }
+    ],
+    "require": {}
+}
