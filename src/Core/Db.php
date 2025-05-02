@@ -3,35 +3,30 @@
 namespace Milos\JobsApi\Core;
 
 use PDO;
-use PDOException;
 
 class Db
 {
-    private string $host = "db";
-    private string $user = "milos";
-    private string $pass = "milospassword123@!";
-    private string $database = "praksa-projekat-1";
+    private string $host;
+    private string $user;
+    private string $pass;
+    private string $database;
 
     private $dbh;
 
     public function __construct()
     {
+        $this->host = $_ENV['DB_HOST'];
+        $this->user = $_ENV['DB_USERNAME'];
+        $this->pass = $_ENV['DB_PASSWORD'];
+        $this->database = $_ENV['DB_NAME'];
+
         $this->connect();
     }
 
     private function connect(): void
     {
-        try {
-            $this->dbh = new PDO("mysql:host=$this->host;dbname=$this->database", $this->user, $this->pass);
-            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $e) {
-            var_dump($e->getMessage());
-            //ErrorController::redirectToErrorPage('db-error');
-        }
-        catch (\Throwable $t) {
-            ErrorController::redirectToErrorPage('unknown-error');
-        }
+        $this->dbh = new PDO("mysql:host=$this->host;dbname=$this->database", $this->user, $this->pass);
+        $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
     public function getConnection()

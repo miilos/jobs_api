@@ -2,8 +2,6 @@
 
 namespace Milos\JobsApi\Core;
 
-use App\Controllers\ErrorController;
-
 class QueryBuilder
 {
     private string $query;
@@ -168,50 +166,36 @@ class QueryBuilder
     {
         $this->build();
 
-        try {
-            $this->conn = (new Db())->getConnection();
+        $this->conn = (new Db())->getConnection();
 
-            $this->stmt = $this->conn->prepare($this->query);
+        $this->stmt = $this->conn->prepare($this->query);
 
-            if ($this->bindings) {
-                foreach ($this->bindings as $binding) {
-                    $this->stmt->bindValue(':' . key($binding), $binding[key($binding)]);
-                }
+        if ($this->bindings) {
+            foreach ($this->bindings as $binding) {
+                $this->stmt->bindValue(':' . key($binding), $binding[key($binding)]);
             }
+        }
 
-            $this->stmt->execute();
+        $this->stmt->execute();
 
-            $results = null;
-            if ($this->operation === 'SELECT') {
-                if ($fetchMode === \PDO::FETCH_COLUMN) {
-                    $results = $this->stmt->fetchAll($fetchMode, 0);
-                }
-                else if ($fetch === 'all') {
-                    $results = $this->stmt->fetchAll($fetchMode);
-                }
-                else {
-                    $results = $this->stmt->fetch($fetchMode);
-                }
+        $results = null;
+        if ($this->operation === 'SELECT') {
+            if ($fetchMode === \PDO::FETCH_COLUMN) {
+                $results = $this->stmt->fetchAll($fetchMode, 0);
+            }
+            else if ($fetch === 'all') {
+                $results = $this->stmt->fetchAll($fetchMode);
             }
             else {
-                $results = $this->stmt->rowCount() > 0;
+                $results = $this->stmt->fetch($fetchMode);
             }
+        }
+        else {
+            $results = $this->stmt->rowCount() > 0;
+        }
 
-            $this->close();
-            return $results;
-        }
-        catch (\PDOException $e) {
-            echo $e->getMessage();
-            $this->close();
-            ErrorController::redirectToErrorPage('db-error');
-            return [];
-        }
-        catch (\Throwable $t) {
-            echo $t->getMessage();
-            $this->close();
-            ErrorController::redirectToErrorPage('unknown-error');
-            return [];
-        }
+        $this->close();
+        return $results;
     }
 
     private function close(): void

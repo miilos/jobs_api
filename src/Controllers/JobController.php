@@ -3,17 +3,39 @@
 namespace Milos\JobsApi\Controllers;
 
 use Milos\JobsApi\Core\Request;
-use Milos\JobsApi\Core\Response;
+use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Route;
+use Milos\JobsApi\Repositories\JobRepository;
 
 class JobController
 {
     #[Route(method: 'get', path: '/api/v1/jobs', name: 'getAllJobs')]
-    public function getAllJobs(Request $req, Response $res): string
+    public function getAllJobs(Request $req): JSONResponse
     {
-        return $res->statusCode(200)->sendJSON([
-           'status' => 'success',
-           'message' => 'hello world!'
+        $jobRepo = new JobRepository();
+        $jobs = $jobRepo->getAll();
+
+        return new JSONResponse([
+            'status' => 'success',
+            'results' => count($jobs),
+            'data' => [
+                'jobs' => $jobs
+            ]
+        ]);
+    }
+
+    #[Route(method: 'get', path: '/api/v1/jobs/{id}', name: 'getJobById')]
+    public function getJobById(Request $req): JSONResponse
+    {
+        $jobRepo = new JobRepository();
+        $id = $req->getUrlParams()['id'];
+        $job = $jobRepo->getById($id);
+
+        return new JSONResponse([
+            'status' => 'success',
+            'data' => [
+                'job' => $job
+            ]
         ]);
     }
 }
