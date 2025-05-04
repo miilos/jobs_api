@@ -2,9 +2,12 @@
 
 namespace Milos\JobsApi\Core;
 
+use Milos\JobsApi\Services\Filter;
+
 class Request
 {
     private array $urlParams = [];
+    public ?Filter $filter = null;
 
     public function getMethod(): string
     {

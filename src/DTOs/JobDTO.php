@@ -18,9 +18,14 @@ class JobDTO implements JsonSerializable
         private DateTime $createdAt,
         private bool $flexibleHours,
         private bool $workFromHome,
-        public ?EmployerDTO $employer = null,
-        public array $comments = [],
+        private ?EmployerDTO $employer = null,
+        private array $comments = [],
     ) {}
+
+    public function __get(string $name)
+    {
+        return $this->$name;
+    }
 
     public function setEmployer(EmployerDTO $employer): void
     {
@@ -32,10 +37,11 @@ class JobDTO implements JsonSerializable
         $this->comments = $comments;
     }
 
-
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return array_filter(get_object_vars($this), function($value, $key) {
+            // if comments or employers are empty that means they're not needed for the current request,
+            // so they're omitted from the JSON response
             if ($key === 'employer' || $key === 'comments') {
                 return !empty($value);
             }

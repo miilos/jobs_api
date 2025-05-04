@@ -38,4 +38,19 @@ class JobController
             ]
         ]);
     }
+
+    #[Route(method: 'post', path: '/api/v1/jobs/filter', name: 'filterJobs')]
+    public function filterJobs(Request $req): JSONResponse
+    {
+        $jobRepo = new JobRepository();
+        $filteredJobs = $jobRepo->filterJobs($req->filter);
+
+        return new JSONResponse([
+            'status' => 'success',
+            'results' => count($filteredJobs),
+            'data' => [
+                'jobs' => $filteredJobs
+            ]
+        ]);
+    }
 }

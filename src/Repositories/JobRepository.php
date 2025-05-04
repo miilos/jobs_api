@@ -10,6 +10,7 @@ use Milos\JobsApi\Mappers\JobMapper;
 use Milos\JobsApi\Models\CommentModel;
 use Milos\JobsApi\Models\EmployerModel;
 use Milos\JobsApi\Models\JobModel;
+use Milos\JobsApi\Services\Filter;
 
 class JobRepository implements IRepositoryMethods
 {
@@ -71,6 +72,12 @@ class JobRepository implements IRepositoryMethods
         };
 
         return $jobDTO;
+    }
+
+    public function filterJobs(Filter $filter): array
+    {
+        $jobDTOs = $this->getAll();
+        return $filter->filterData($jobDTOs);
     }
 
     public function create(array $data): ?array

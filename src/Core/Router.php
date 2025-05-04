@@ -4,6 +4,7 @@ namespace Milos\JobsApi\Core;
 
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Exceptions\APIException;
+use Milos\JobsApi\Services\Filter;
 use ReflectionClass;
 
 class Router
@@ -90,6 +91,15 @@ class Router
             $path = $this->request->getPath();
             $routeParams = $this->resolveParams($method, $path);
             $this->request->setUrlParams($routeParams[1]);
+
+            if (str_contains($path, 'filter')) {
+                $filterData = json_decode(file_get_contents('php://input', ), true);
+
+                if ($filterData) {
+                    $filter = Filter::create($filterData);
+                    $this->request->filter = $filter;
+                }
+            }
 
             if (!array_key_exists($routeParams[0], $this->routes[$method])) {
                 throw new APIException('route not found!', 404);
