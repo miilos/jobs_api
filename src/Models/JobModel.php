@@ -31,6 +31,15 @@ class JobModel
         return $job;
     }
 
+    public function getJobsByEmployer(string $employerId): array
+    {
+        $qb = new QueryBuilder();
+        $qb->select('*');
+        $qb->table('jobs');
+        $qb->where(['employerId' => $employerId]);
+        return $qb->execute();
+    }
+
     public function createJob(array $job): array
     {
         $jobId = Uuid::uuid4();
