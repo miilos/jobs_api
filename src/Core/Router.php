@@ -109,7 +109,10 @@ class Router
             if (class_exists($class) && method_exists($class, $method)) {
                 $class = new $class();
                 $response = call_user_func_array([$class, $method], ['req' => $this->request]);
-                $response->statusCode(200);
+
+                if (!$response->getStatusCode()) {
+                    $response->statusCode(200);
+                }
             }
         }
         catch (APIException $apiEx) {

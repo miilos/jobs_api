@@ -2,6 +2,7 @@
 
 namespace Milos\JobsApi\Controllers;
 
+use Milos\JobsApi\Core\Exceptions\APIException;
 use Milos\JobsApi\Core\Request;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Route;
@@ -62,12 +63,33 @@ class JobController
         $jobRepo = new JobRepository();
         $newJob = $jobRepo->create($req->body);
 
-        return new JSONResponse([
+        $res = new JSONResponse([
             'status' => 'success',
             'message' => 'job created!',
             'data' => [
                 'job' => $newJob
             ]
         ]);
+        $res->statusCode(201);
+        return $res;
+    }
+
+    #[Route(method: 'delete', path: '/api/v1/jobs/{id}', name: 'deleteJob')]
+    public function deleteJob(Request $req): JSONResponse
+    {
+        $jobRepo = new JobRepository();
+        $id = $req->getUrlParams()['id'];
+        $status = $jobRepo->delete($id);
+
+        if (!$status) {
+            throw new APIException('no job deleted!', 400);
+        }
+
+        $res = new JSONResponse([
+            'status' => 'success',
+            'message' => 'job deleted!',
+        ]);
+        $res->statusCode(204);
+        return $res;
     }
 }

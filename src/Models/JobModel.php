@@ -59,4 +59,13 @@ class JobModel
             return [];
         }
     }
+
+    public function deleteJob(string $id): bool
+    {
+        $qb = new QueryBuilder();
+        $qb->delete();
+        $qb->table('jobs');
+        $qb->where(['jobId' => $id]);
+        return $qb->execute();
+    }
 }

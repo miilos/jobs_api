@@ -11,5 +11,10 @@ abstract class Response
         $this->statusCode = $statusCode;
     }
 
+    public function getStatusCode(): ?int
+    {
+        return $this->statusCode ?? null;
+    }
+
     public abstract function send();
 }

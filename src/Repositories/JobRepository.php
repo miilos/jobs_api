@@ -116,8 +116,9 @@ class JobRepository implements IRepositoryMethods
         // TODO: Implement update() method.
     }
 
-    public function delete(string $id): ?bool
+    public function delete(string $id): bool
     {
-        // TODO: Implement delete() method.
+        $jobModel = new JobModel();
+        return $jobModel->deleteJob($id);
     }
 }
