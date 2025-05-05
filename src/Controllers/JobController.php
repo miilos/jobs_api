@@ -74,6 +74,22 @@ class JobController
         return $res;
     }
 
+    #[Route(method: 'patch', path: '/api/v1/jobs/{id}', name: 'updateJob')]
+    public function updateJob(Request $req): JSONResponse
+    {
+        $jobRepo = new JobRepository();
+        $id = $req->getUrlParams()['id'];
+        $updatedJob = $jobRepo->update($id, $req->body);
+
+        return new JSONResponse([
+            'status' => 'success',
+            'message' => 'job updated!',
+            'data' => [
+                'job' => $updatedJob
+            ]
+        ]);
+    }
+
     #[Route(method: 'delete', path: '/api/v1/jobs/{id}', name: 'deleteJob')]
     public function deleteJob(Request $req): JSONResponse
     {

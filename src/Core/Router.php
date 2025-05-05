@@ -92,9 +92,9 @@ class Router
             $routeParams = $this->resolveParams($method, $path);
             $this->request->setUrlParams($routeParams[1]);
 
-            if ($method === 'post') {
-                $postData = json_decode(file_get_contents('php://input', ), true);
-                $this->request->body = $postData;
+            if ($method === 'post' || $method === 'patch') {
+                $reqData = json_decode(file_get_contents('php://input', ), true);
+                $this->request->body = $reqData;
             }
 
             if (!array_key_exists($routeParams[0], $this->routes[$method])) {

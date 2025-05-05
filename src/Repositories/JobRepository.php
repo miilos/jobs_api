@@ -85,17 +85,7 @@ class JobRepository implements IRepositoryMethods
     {
         $validator = new Validator($data);
 
-        $errors = $validator->validate([
-            ['field' => 'jobName', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'description', 'rules' => [Validator::REQUIRED, [Validator::MIN_LENGTH, 10]]],
-            ['field' => 'employerId', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'field', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'startSalary', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'shifts', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'location', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'flexibleHours', 'rules' => [Validator::REQUIRED]],
-            ['field' => 'workFromHome', 'rules' => [Validator::REQUIRED]]
-        ]);
+        $errors = $validator->validate('jobs');
 
         if ($errors) {
             throw new APIException('validation error', 400, $errors);
@@ -105,15 +95,31 @@ class JobRepository implements IRepositoryMethods
         $newJob = $jobModel->createJob($data);
 
         if (!$newJob) {
-            throw new APIException('something went wrong whn creating the job', 500);
+            throw new APIException('something went wrong with creating the job', 500);
         }
 
         return JobMapper::toDTO($newJob);
     }
 
-    public function update(string $id, array $data): ?array
+    public function update(string $id, array $data): JobDTO
     {
-        // TODO: Implement update() method.
+        $validator = new Validator($data);
+        $errors = $validator->validate('jobs', options: [
+            'check' => array_keys($data)
+        ]);
+
+        if ($errors) {
+            throw new APIException('validation error', 400, $errors);
+        }
+
+        $jobModel = new JobModel();
+        $updatedJob = $jobModel->updateJob($id, $data);
+
+        if (!$updatedJob) {
+            throw new APIException('something went wrong with updating the job', 500);
+        }
+
+        return JobMapper::toDTO($updatedJob);
     }
 
     public function delete(string $id): bool

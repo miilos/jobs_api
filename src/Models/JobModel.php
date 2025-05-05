@@ -60,6 +60,23 @@ class JobModel
         }
     }
 
+    public function updateJob(string $id, array $data): array
+    {
+        $qb = new QueryBuilder();
+        $qb->update();
+        $qb->table('jobs');
+        $qb->values($data);
+        $qb->where(['jobId' => $id]);
+        $status = $qb->execute();
+
+        if ($status) {
+            return $this->getJobById($id);
+        }
+        else {
+            return [];
+        }
+    }
+
     public function deleteJob(string $id): bool
     {
         $qb = new QueryBuilder();

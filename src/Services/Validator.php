@@ -15,17 +15,24 @@ class Validator
         $this->dataToValidate = $dataToValidate;
     }
 
-    public function validate(array $validators): array
+    public function validate(string $entity, array $options = []): array
     {
         /*
-         * $validators is an array like:
-         * [field, rules]
-         * elements of the rules array are either constants from the Validator class,
-         * or an array like [constant, extraArg] in case an extra argument is needed to pass to the validator function
+         * get all the validation rules for the given entity (job, user, comment...),
+         * go through the rules and add any error to the $errors array
+         * the errors array will have a separate key for each field that did not pass validation
+         *
+         * $options is an array that can contain the 'check' key which specifies only certain keys
+         * to run validation on
         */
-        foreach ($validators as $validator) {
-            $valToValidate = $this->dataToValidate[$validator['field']] ?? null;
+        foreach ($this->getValidators()[$entity] as $validator) {
+            $valToCheck = $this->dataToValidate[$validator['field']] ?? null;
 
+            if (isset($options['check']) && !in_array($validator['field'], $options['check'])) {
+                continue;
+            }
+
+            // get the rules based on which the validator functions will be retrieved
             foreach ($validator['rules'] as $rule) {
                 if (is_array($rule)) {
                     $ruleFn = $this->getValidatorFunctions()[$rule[0]]['validator'];
@@ -34,7 +41,7 @@ class Validator
 
                     $ruleErrMsg = str_replace('{n}', $validatorFnArg, $ruleErrMsg);
 
-                    if(!$ruleFn($valToValidate, $validatorFnArg)) {
+                    if(!$ruleFn($valToCheck, $validatorFnArg)) {
                         $this->errors[$validator['field']][] = $ruleErrMsg;
                     }
                 }
@@ -42,7 +49,7 @@ class Validator
                     $ruleFn = $this->getValidatorFunctions()[$rule]['validator'];
                     $ruleErrMsg = $this->getValidatorFunctions()[$rule]['error_msg'];
 
-                    if (!$ruleFn($valToValidate)) {
+                    if (!$ruleFn($valToCheck)) {
                         $this->errors[$validator['field']][] = $ruleErrMsg;
                     }
                 }
@@ -50,6 +57,23 @@ class Validator
         }
 
         return $this->errors;
+    }
+
+    private function getValidators(): array
+    {
+        return [
+            'jobs' => [
+                ['field' => 'jobName', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'description', 'rules' => [Validator::REQUIRED, [Validator::MIN_LENGTH, 10]]],
+                ['field' => 'employerId', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'field', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'startSalary', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'shifts', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'location', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'flexibleHours', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'workFromHome', 'rules' => [Validator::REQUIRED]]
+            ]
+        ];
     }
 
     private function getValidatorFunctions(): array
