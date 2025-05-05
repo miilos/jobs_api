@@ -11,6 +11,7 @@ use Milos\JobsApi\Models\CommentModel;
 use Milos\JobsApi\Models\EmployerModel;
 use Milos\JobsApi\Models\JobModel;
 use Milos\JobsApi\Services\Filter;
+use Milos\JobsApi\Services\Validator;
 
 class JobRepository implements IRepositoryMethods
 {
@@ -80,9 +81,34 @@ class JobRepository implements IRepositoryMethods
         return $filter->filterData($jobDTOs);
     }
 
-    public function create(array $data): ?array
+    public function create(array $data): JobDTO
     {
-        // TODO: Implement create() method.
+        $validator = new Validator($data);
+
+        $errors = $validator->validate([
+            ['field' => 'jobName', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'description', 'rules' => [Validator::REQUIRED, [Validator::MIN_LENGTH, 10]]],
+            ['field' => 'employerId', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'field', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'startSalary', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'shifts', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'location', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'flexibleHours', 'rules' => [Validator::REQUIRED]],
+            ['field' => 'workFromHome', 'rules' => [Validator::REQUIRED]]
+        ]);
+
+        if ($errors) {
+            throw new APIException('validation error', 400, $errors);
+        }
+
+        $jobModel = new JobModel();
+        $newJob = $jobModel->createJob($data);
+
+        if (!$newJob) {
+            throw new APIException('something went wrong whn creating the job', 500);
+        }
+
+        return JobMapper::toDTO($newJob);
     }
 
     public function update(string $id, array $data): ?array

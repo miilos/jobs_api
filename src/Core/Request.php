@@ -7,7 +7,7 @@ use Milos\JobsApi\Services\Filter;
 class Request
 {
     private array $urlParams = [];
-    public ?Filter $filter = null;
+    public array $body = [];
 
     public function getMethod(): string
     {

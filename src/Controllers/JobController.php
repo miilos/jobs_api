@@ -6,6 +6,7 @@ use Milos\JobsApi\Core\Request;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Route;
 use Milos\JobsApi\Repositories\JobRepository;
+use Milos\JobsApi\Services\Filter;
 
 class JobController
 {
@@ -43,13 +44,29 @@ class JobController
     public function filterJobs(Request $req): JSONResponse
     {
         $jobRepo = new JobRepository();
-        $filteredJobs = $jobRepo->filterJobs($req->filter);
+        $filter = Filter::create($req->body);
+        $filteredJobs = $jobRepo->filterJobs($filter);
 
         return new JSONResponse([
             'status' => 'success',
             'results' => count($filteredJobs),
             'data' => [
                 'jobs' => $filteredJobs
+            ]
+        ]);
+    }
+
+    #[Route(method: 'post', path: '/api/v1/jobs', name: 'createJob')]
+    public function createJob(Request $req): JSONResponse
+    {
+        $jobRepo = new JobRepository();
+        $newJob = $jobRepo->create($req->body);
+
+        return new JSONResponse([
+            'status' => 'success',
+            'message' => 'job created!',
+            'data' => [
+                'job' => $newJob
             ]
         ]);
     }

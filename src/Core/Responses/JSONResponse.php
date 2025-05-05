@@ -11,6 +11,11 @@ class JSONResponse extends Response
         $this->data = $data;
     }
 
+    public function addResponseData(string $key, mixed $value): void
+    {
+        $this->data[$key] = $value;
+    }
+
     public function send(): string
     {
         http_response_code($this->statusCode);

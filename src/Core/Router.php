@@ -92,13 +92,9 @@ class Router
             $routeParams = $this->resolveParams($method, $path);
             $this->request->setUrlParams($routeParams[1]);
 
-            if (str_contains($path, 'filter')) {
-                $filterData = json_decode(file_get_contents('php://input', ), true);
-
-                if ($filterData) {
-                    $filter = Filter::create($filterData);
-                    $this->request->filter = $filter;
-                }
+            if ($method === 'post') {
+                $postData = json_decode(file_get_contents('php://input', ), true);
+                $this->request->body = $postData;
             }
 
             if (!array_key_exists($routeParams[0], $this->routes[$method])) {
@@ -121,12 +117,17 @@ class Router
                 'status' => 'fail',
                 'message' => $apiEx->getMessage()
             ]);
+
+            if ($apiEx->getExceptionData()) {
+                $response->addResponseData('errors', $apiEx->getExceptionData());
+            }
+
             $response->statusCode($apiEx->getStatusCode());
         }
         catch (\PDOException $pdoEx) {
             $response = new JSONResponse([
                 'status' => 'error',
-                'message' => 'greska pri povezivanju sa bazom!',
+                'message' => 'greska pri komunikaciji sa bazom!',
                 'details' => $pdoEx->getMessage()
             ]);
             $response->statusCode(500);

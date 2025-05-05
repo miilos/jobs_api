@@ -22,6 +22,10 @@ class FilterMapper
         }
 
         foreach ($data as $key => $value) {
+            if (!in_array($value['operation'], array_keys($this->getCallback()))) {
+                continue;
+            }
+
             if ($value['operation'] === 'between') {
                 $filter->filters[] = [
                     'property' => $key,

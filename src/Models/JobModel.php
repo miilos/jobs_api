@@ -3,6 +3,8 @@
 namespace Milos\JobsApi\Models;
 
 use Milos\JobsApi\Core\QueryBuilder;
+use Milos\JobsApi\DTOs\JobDTO;
+use Ramsey\Uuid\Uuid;
 
 class JobModel
 {
@@ -27,5 +29,34 @@ class JobModel
         }
 
         return $job;
+    }
+
+    public function createJob(array $job): array
+    {
+        $jobId = Uuid::uuid4();
+        $qb = new QueryBuilder();
+        $qb->insert();
+        $qb->table('jobs');
+        $qb->fields('jobId', 'employerId', 'jobName', 'description', 'field', 'startSalary', 'shifts', 'location', 'flexibleHours', 'workFromHome');
+        $qb->values([
+            'jobId' => $jobId,
+            'employerId' => $job['employerId'],
+            'jobName' => $job['jobName'],
+            'description' => $job['description'],
+            'field' => $job['field'],
+            'startSalary' => $job['startSalary'],
+            'shifts' => $job['shifts'],
+            'location' => $job['location'],
+            'flexibleHours' => isset($job['flexibleHours']) ? 1 : 0,
+            'workFromHome' => isset($job['workFromHome']) ? 1 : 0
+        ]);
+        $status = $qb->execute();
+
+        if ($status) {
+            return $this->getJobById($jobId);
+        }
+        else {
+            return [];
+        }
     }
 }
