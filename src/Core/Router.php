@@ -4,12 +4,14 @@ namespace Milos\JobsApi\Core;
 
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Exceptions\APIException;
+use Milos\JobsApi\Middleware\Middleware;
 use Milos\JobsApi\Services\Filter;
 use ReflectionClass;
 
 class Router
 {
     private array $routes;
+    private array $middleware;
     private Request $request;
 
     public function __construct(Request $request)
@@ -20,6 +22,12 @@ class Router
     public function registerRoute(string $method, string $path, callable|array $action): void
     {
         $this->routes[$method][$path] = $action;
+    }
+
+    public function registerMiddleware(string $method, string $path, array $mw): void
+    {
+        $this->middleware[$method][$path][] = $mw;
+        rsort($this->middleware[$method][$path]);
     }
 
     public function registerRouteAttributes(array $controllers): void
@@ -33,6 +41,22 @@ class Router
                 foreach ($attributes as $attribute) {
                     $route = $attribute->newInstance();
                     $this->registerRoute($route->method, $route->path, [$controller, $method->getName()]);
+                }
+            }
+        }
+    }
+
+    public function registerMiddlewareAttributes(array $middlewares): void
+    {
+        foreach ($middlewares as $middleware) {
+            $reflectionMiddleware = new ReflectionClass($middleware);
+
+            foreach ($reflectionMiddleware->getMethods() as $method) {
+                $attributes = $method->getAttributes(Middleware::class);
+
+                foreach ($attributes as $attribute) {
+                    $mw = $attribute->newInstance();
+                    $this->registerMiddleware($mw->method, $mw->path, [$middleware, $method->getName()]);
                 }
             }
         }
@@ -87,27 +111,39 @@ class Router
     public function resolve(): void
     {
         try {
-            $method = $this->request->getMethod();
+            $reqMethod = $this->request->getMethod();
             $path = $this->request->getPath();
-            $routeParams = $this->resolveParams($method, $path);
+            $routeParams = $this->resolveParams($reqMethod, $path);
             $this->request->setUrlParams($routeParams[1]);
 
-            if ($method === 'post' || $method === 'patch') {
+            if ($reqMethod === 'post' || $reqMethod === 'patch') {
                 $reqData = json_decode(file_get_contents('php://input', ), true);
                 $this->request->body = $reqData;
             }
 
-            if (!array_key_exists($routeParams[0], $this->routes[$method])) {
+            if (!array_key_exists($routeParams[0], $this->routes[$reqMethod])) {
                 throw new APIException('route not found!', 404);
             }
 
-            $action = $this->routes[$method][$routeParams[0]];
+            $action = $this->routes[$reqMethod][$routeParams[0]];
             [$class, $method] = $action;
+
+            $middlewares = $this->middleware[$reqMethod][$path] ?? [];
 
             $response = null;
 
             if (class_exists($class) && method_exists($class, $method)) {
                 $class = new $class();
+
+                foreach ($middlewares as $mw) {
+                    [$mwClass, $mwMethod] = $mw;
+
+                    if (class_exists($mwClass) && method_exists($mwClass, $mwMethod)) {
+                        $mwObj = new $mwClass();
+                        call_user_func_array([$mwObj, $mwMethod], ['req' => $this->request]);
+                    }
+                }
+
                 $response = call_user_func_array([$class, $method], ['req' => $this->request]);
 
                 if (!$response->getStatusCode()) {
