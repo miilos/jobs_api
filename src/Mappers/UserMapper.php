@@ -1,0 +1,20 @@
+<?php
+
+namespace Milos\JobsApi\Mappers;
+
+use Milos\JobsApi\DTOs\UserDTO;
+
+class UserMapper
+{
+    public static function toDTO(array $data): UserDTO
+    {
+        return new UserDTO(
+            id: $data['userId'],
+            firstName: $data['firstName'],
+            lastName: $data['lastName'],
+            email: $data['email'],
+            field: $data['field'],
+            role: $data['role'],
+        );
+    }
+}

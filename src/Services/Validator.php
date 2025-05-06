@@ -6,6 +6,8 @@ class Validator
 {
     public const string REQUIRED = 'required';
     public const string MIN_LENGTH = 'min_length';
+    public const string VALID_EMAIL = 'valid_email';
+    public const string MATCHES = 'matches';
 
     private array $dataToValidate;
     private array $errors = [];
@@ -39,7 +41,7 @@ class Validator
                     $ruleErrMsg = $this->getValidatorFunctions()[$rule[0]]['error_msg'];
                     $validatorFnArg = $rule[1];
 
-                    $ruleErrMsg = str_replace('{n}', $validatorFnArg, $ruleErrMsg);
+                    $ruleErrMsg = str_replace('{replace}', $validatorFnArg, $ruleErrMsg);
 
                     if(!$ruleFn($valToCheck, $validatorFnArg)) {
                         $this->errors[$validator['field']][] = $ruleErrMsg;
@@ -72,6 +74,14 @@ class Validator
                 ['field' => 'location', 'rules' => [Validator::REQUIRED]],
                 ['field' => 'flexibleHours', 'rules' => [Validator::REQUIRED]],
                 ['field' => 'workFromHome', 'rules' => [Validator::REQUIRED]]
+            ],
+            'users' => [
+                ['field' => 'firstName', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'lastName', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'email', 'rules' => [Validator::REQUIRED, Validator::VALID_EMAIL]],
+                ['field' => 'field', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'password', 'rules' => [Validator::REQUIRED, [Validator::MIN_LENGTH, 8]]],
+                ['field' => 'passwordConfirm', 'rules' => [Validator::REQUIRED, [Validator::MATCHES, 'password']]],
             ]
         ];
     }
@@ -85,7 +95,15 @@ class Validator
             ],
             self::MIN_LENGTH => [
                 'validator' => fn($val, $minLength) => strlen($val ?? '') >= $minLength,
-                'error_msg' => 'this value has to be at least {n} characters long',
+                'error_msg' => 'this value has to be at least {replace} characters long',
+            ],
+            self::VALID_EMAIL => [
+                'validator' => fn($val) => filter_var($val, FILTER_VALIDATE_EMAIL),
+                'error_msg' => 'email address is not valid',
+            ],
+            self::MATCHES => [
+                'validator' => fn($val, $compareVal) => $val === $this->dataToValidate[$compareVal],
+                'error_msg' => 'this field must match {replace}',
             ]
         ];
     }
