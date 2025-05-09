@@ -2,13 +2,13 @@
 
 namespace Milos\JobsApi\Repositories;
 
-use Milos\JobsApi\DTOs\JobDTO;
+use Milos\JobsApi\DTOs\DTOInterface;
 
 interface IRepositoryMethods
 {
     public function getAll(): array;
     public function getById(string $id): object;
-    public function create(array $data): JobDTO;
-    public function update(string $id, array $data): JobDTO;
+    public function create(array $data): DTOInterface;
+    public function update(string $id, array $data): DTOInterface;
     public function delete(string $id): bool;
 }

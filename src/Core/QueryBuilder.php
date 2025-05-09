@@ -166,7 +166,7 @@ class QueryBuilder
     {
         $this->build();
 
-        $this->conn = (new Db())->getConnection();
+        $this->conn = Db::getInstance()->getConnection();
 
         $this->stmt = $this->conn->prepare($this->query);
 

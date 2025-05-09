@@ -5,16 +5,27 @@ namespace Milos\JobsApi\Core;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Exceptions\APIException;
 use Milos\JobsApi\Middleware\Middleware;
-use Milos\JobsApi\Services\Filter;
 use ReflectionClass;
 
 class Router
 {
+    private static ?Router $instance = null;
     private array $routes;
     private array $middleware;
     private Request $request;
 
-    public function __construct(Request $request)
+    private function __construct() {}
+
+    public static function getInstance(): Router
+    {
+        if (self::$instance === null) {
+            self::$instance = new Router();
+        }
+
+        return self::$instance;
+    }
+
+    public function setRequest(Request $request): void
     {
         $this->request = $request;
     }

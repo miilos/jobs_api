@@ -2,7 +2,7 @@
 
 namespace Milos\JobsApi\DTOs;
 
-class EmployerDTO implements \JsonSerializable
+class EmployerDTO implements DTOInterface, \JsonSerializable
 {
     public function __construct(
         private string $id,

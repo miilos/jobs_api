@@ -10,7 +10,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 \Dotenv\Dotenv::createImmutable(__DIR__)->load();
 
-$router = new Router(new Request());
+$router = Router::getInstance();
+$router->setRequest(new Request());
 
 $controllers = [
     JobController::class,

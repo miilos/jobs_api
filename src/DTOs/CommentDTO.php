@@ -2,7 +2,7 @@
 
 namespace Milos\JobsApi\DTOs;
 
-class CommentDTO
+class CommentDTO implements DTOInterface
 {
     public function __construct(
         public readonly int $id,

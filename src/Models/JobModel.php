@@ -3,7 +3,6 @@
 namespace Milos\JobsApi\Models;
 
 use Milos\JobsApi\Core\QueryBuilder;
-use Milos\JobsApi\DTOs\JobDTO;
 use Ramsey\Uuid\Uuid;
 
 class JobModel

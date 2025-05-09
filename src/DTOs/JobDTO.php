@@ -5,7 +5,7 @@ namespace Milos\JobsApi\DTOs;
 use DateTime;
 use JsonSerializable;
 
-class JobDTO implements JsonSerializable
+class JobDTO implements DTOInterface, JsonSerializable
 {
     public function __construct(
         private string $id,
