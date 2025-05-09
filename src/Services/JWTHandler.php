@@ -4,6 +4,7 @@ namespace Milos\JobsApi\Services;
 
 use Cassandra\DateTime;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class JWTHandler
 {
@@ -27,5 +28,16 @@ class JWTHandler
             'secure' => true,
             'samesite' => 'Strict',
         ]);
+    }
+
+    public static function getTokenFromCookie(): string
+    {
+        return $_COOKIE['jwt'] ?? '';
+    }
+
+    public static function decode(string $jwt): object
+    {
+        $decoded = JWT::decode($jwt, new Key($_ENV['JWT_SECRET'], 'HS256'));
+        return $decoded->data;
     }
 }

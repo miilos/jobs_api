@@ -24,10 +24,9 @@ class Router
         $this->routes[$method][$path] = $action;
     }
 
-    public function registerMiddleware(string $method, string $path, array $mw): void
+    public function registerMiddleware(string $function, array $middleware, array $args): void
     {
-        $this->middleware[$method][$path][] = $mw;
-        rsort($this->middleware[$method][$path]);
+        $this->middleware[$function][] = ['function' => $middleware, 'args' => $args];
     }
 
     public function registerRouteAttributes(array $controllers): void
@@ -36,9 +35,9 @@ class Router
             $reflectionController = new ReflectionClass($controller);
 
             foreach ($reflectionController->getMethods() as $method) {
-                $attributes = $method->getAttributes(Route::class);
+                $routeAttributes = $method->getAttributes(Route::class);
 
-                foreach ($attributes as $attribute) {
+                foreach ($routeAttributes as $attribute) {
                     $route = $attribute->newInstance();
                     $this->registerRoute($route->method, $route->path, [$controller, $method->getName()]);
                 }
@@ -46,17 +45,19 @@ class Router
         }
     }
 
-    public function registerMiddlewareAttributes(array $middlewares): void
+    // the $middleware array consists of keys which are the names of functions
+    // and values which are arrays of middleware functions to be called before that function
+    public function registerMiddlewareAttributes(array $controllers): void
     {
-        foreach ($middlewares as $middleware) {
-            $reflectionMiddleware = new ReflectionClass($middleware);
+        foreach ($controllers as $controller) {
+            $reflectionController = new ReflectionClass($controller);
 
-            foreach ($reflectionMiddleware->getMethods() as $method) {
-                $attributes = $method->getAttributes(Middleware::class);
+            foreach ($reflectionController->getMethods() as $method) {
+                $mwAttributes = $method->getAttributes(Middleware::class);
 
-                foreach ($attributes as $attribute) {
-                    $mw = $attribute->newInstance();
-                    $this->registerMiddleware($mw->method, $mw->path, [$middleware, $method->getName()]);
+                foreach ($mwAttributes as $attribute) {
+                    $middleware = $attribute->newInstance();
+                    $this->registerMiddleware($method->getName(), $middleware->function, $middleware->args);
                 }
             }
         }
@@ -128,19 +129,20 @@ class Router
             $action = $this->routes[$reqMethod][$routeParams[0]];
             [$class, $method] = $action;
 
-            $middlewares = $this->middleware[$reqMethod][$path] ?? [];
-
             $response = null;
 
             if (class_exists($class) && method_exists($class, $method)) {
                 $class = new $class();
 
-                foreach ($middlewares as $mw) {
-                    [$mwClass, $mwMethod] = $mw;
+                // if there's middleware registered to a function with this name, call the mw stack
+                if (isset($this->middleware[$method])) {
+                    foreach ($this->middleware[$method] as $middleware) {
+                        [$mwClass, $mwMethod] = $middleware['function'];
 
-                    if (class_exists($mwClass) && method_exists($mwClass, $mwMethod)) {
-                        $mwObj = new $mwClass();
-                        call_user_func_array([$mwObj, $mwMethod], ['req' => $this->request]);
+                        if (class_exists($mwClass) && method_exists($mwClass, $mwMethod)) {
+                            $mwClass = new $mwClass();
+                            call_user_func_array([$mwClass, $mwMethod], ['req' => $this->request, 'args' => $middleware['args']]);
+                        }
                     }
                 }
 

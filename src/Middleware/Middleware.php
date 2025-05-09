@@ -6,8 +6,7 @@ namespace Milos\JobsApi\Middleware;
 class Middleware
 {
     public function __construct(
-       public string $method,
-       public string $path,
-       public int $priority = 1,
+        public array $function,
+        public array $args = [],
     ) {}
 }

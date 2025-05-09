@@ -3,7 +3,6 @@
 use Milos\JobsApi\Controllers\JobController;
 use Milos\JobsApi\Controllers\EmployerController;
 use Milos\JobsApi\Controllers\UserController;
-use Milos\JobsApi\Middleware\AuthMiddleware;
 use Milos\JobsApi\Core\Request;
 use Milos\JobsApi\Core\Router;
 
@@ -13,14 +12,13 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $router = new Router(new Request());
 
-$router->registerMiddlewareAttributes([
-    AuthMiddleware::class,
-]);
-
-$router->registerRouteAttributes([
+$controllers = [
     JobController::class,
     EmployerController::class,
     UserController::class,
-]);
+];
+
+$router->registerRouteAttributes($controllers);
+$router->registerMiddlewareAttributes($controllers);
 
 $router->resolve();

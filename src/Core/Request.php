@@ -2,12 +2,14 @@
 
 namespace Milos\JobsApi\Core;
 
+use Milos\JobsApi\DTOs\UserDTO;
 use Milos\JobsApi\Services\Filter;
 
 class Request
 {
     private array $urlParams = [];
     public array $body = [];
+    public ?UserDTO $user = null; // when authorize middleware runs, it will add the logged in user's data to the request
 
     public function getMethod(): string
     {

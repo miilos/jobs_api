@@ -6,6 +6,8 @@ use Milos\JobsApi\Core\Exceptions\APIException;
 use Milos\JobsApi\Core\Request;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Route;
+use Milos\JobsApi\Middleware\AuthMiddleware;
+use Milos\JobsApi\Middleware\Middleware;
 use Milos\JobsApi\Repositories\JobRepository;
 use Milos\JobsApi\Services\Filter;
 
@@ -58,6 +60,8 @@ class JobController
     }
 
     #[Route(method: 'post', path: '/api/v1/jobs', name: 'createJob')]
+    #[Middleware(function: [AuthMiddleware::class, 'authorize'])]
+    #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function createJob(Request $req): JSONResponse
     {
         $jobRepo = new JobRepository();
@@ -75,6 +79,8 @@ class JobController
     }
 
     #[Route(method: 'patch', path: '/api/v1/jobs/{id}', name: 'updateJob')]
+    #[Middleware(function: [AuthMiddleware::class, 'authorize'])]
+    #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function updateJob(Request $req): JSONResponse
     {
         $jobRepo = new JobRepository();
@@ -91,6 +97,8 @@ class JobController
     }
 
     #[Route(method: 'delete', path: '/api/v1/jobs/{id}', name: 'deleteJob')]
+    #[Middleware(function: [AuthMiddleware::class, 'authorize'])]
+    #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function deleteJob(Request $req): JSONResponse
     {
         $jobRepo = new JobRepository();
