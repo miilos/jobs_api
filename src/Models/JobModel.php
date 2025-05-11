@@ -3,50 +3,35 @@
 namespace Milos\JobsApi\Models;
 
 use Milos\JobsApi\Core\QueryBuilder;
+use Milos\JobsApi\Core\QueryDirector;
 use Ramsey\Uuid\Uuid;
 
-class JobModel
+class JobModel extends Model
 {
+    public function __construct(QueryDirector $director)
+    {
+        parent::__construct($director);
+    }
+
     public function getAllJobs(): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('jobs');
-        return $qb->execute();
+        return $this->director->getAll('jobs', ['*']);
     }
 
     public function getJobById(string $id): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('jobs');
-        $qb->where(['jobId' => $id]);
-        $job = $qb->execute('one');
-
-        if (!$job) {
-            return [];
-        }
-
-        return $job;
+        return $this->director->getOne('jobs', ['*'], ['jobId' => $id]);
     }
 
     public function getJobsByEmployer(string $employerId): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('jobs');
-        $qb->where(['employerId' => $employerId]);
-        return $qb->execute();
+        return $this->director->getAll('jobs', ['*'], ['employerId' => $employerId]);
     }
 
     public function createJob(array $job): array
     {
         $jobId = Uuid::uuid4();
-        $qb = new QueryBuilder();
-        $qb->insert();
-        $qb->table('jobs');
-        $qb->fields('jobId', 'employerId', 'jobName', 'description', 'field', 'startSalary', 'shifts', 'location', 'flexibleHours', 'workFromHome');
-        $qb->values([
+        $status = $this->director->create('jobs', [
             'jobId' => $jobId,
             'employerId' => $job['employerId'],
             'jobName' => $job['jobName'],
@@ -58,7 +43,6 @@ class JobModel
             'flexibleHours' => isset($job['flexibleHours']) ? 1 : 0,
             'workFromHome' => isset($job['workFromHome']) ? 1 : 0
         ]);
-        $status = $qb->execute();
 
         if ($status) {
             return $this->getJobById($jobId);
@@ -70,12 +54,7 @@ class JobModel
 
     public function updateJob(string $id, array $data): array
     {
-        $qb = new QueryBuilder();
-        $qb->update();
-        $qb->table('jobs');
-        $qb->values($data);
-        $qb->where(['jobId' => $id]);
-        $status = $qb->execute();
+        $status = $this->director->update('jobs', $data, ['jobId' => $id]);
 
         if ($status) {
             return $this->getJobById($id);
@@ -87,10 +66,6 @@ class JobModel
 
     public function deleteJob(string $id): bool
     {
-        $qb = new QueryBuilder();
-        $qb->delete();
-        $qb->table('jobs');
-        $qb->where(['jobId' => $id]);
-        return $qb->execute();
+        return $this->director->delete('jobs', ['jobId' => $id]);
     }
 }

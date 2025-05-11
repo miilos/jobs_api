@@ -10,12 +10,18 @@ use Milos\JobsApi\Services\JWTHandler;
 
 class UserController
 {
+    private UserRepository $repo;
+
+    public function __construct(UserRepository $repo)
+    {
+        $this->repo = $repo;
+    }
+
     #[Route(method: 'post', path: '/api/v1/signup', name: 'signup')]
     public function signup(Request $req): JSONResponse
     {
         $data = $req->body;
-        $userRepo = new UserRepository();
-        $newUser = $userRepo->signup($data);
+        $newUser = $this->repo->signup($data);
 
         $token = JWTHandler::sign($newUser);
         JWTHandler::setCookie($token);
@@ -33,8 +39,7 @@ class UserController
     public function login(Request $req): JSONResponse
     {
         $body = $req->body;
-        $userRepo = new UserRepository();
-        $user = $userRepo->login($body);
+        $user = $this->repo->login($body);
 
         $token = JWTHandler::sign($user);
         JWTHandler::setCookie($token);

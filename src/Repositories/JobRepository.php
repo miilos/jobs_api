@@ -3,6 +3,7 @@
 namespace Milos\JobsApi\Repositories;
 
 use Milos\JobsApi\Core\Exceptions\APIException;
+use Milos\JobsApi\Core\QueryDirector;
 use Milos\JobsApi\DTOs\JobDTO;
 use Milos\JobsApi\Mappers\CommentMapper;
 use Milos\JobsApi\Mappers\EmployerMapper;
@@ -13,15 +14,20 @@ use Milos\JobsApi\Models\JobModel;
 use Milos\JobsApi\Services\Filter;
 use Milos\JobsApi\Services\Validator;
 
-class JobRepository implements IRepositoryMethods
+class JobRepository implements Repository
 {
+    private JobModel $model;
+
+    public function __construct(JobModel $model)
+    {
+        $this->model = $model;
+    }
 
     public function getAll(): array
     {
-        $jobModel = new JobModel();
-        $employerModel = new EmployerModel();
+        $employerModel = new EmployerModel(new QueryDirector());
 
-        $jobs = $jobModel->getAllJobs();
+        $jobs = $this->model->getAllJobs();
         $jobDTOs = [];
 
         foreach ($jobs as $job) {
@@ -42,11 +48,10 @@ class JobRepository implements IRepositoryMethods
 
     public function getById(string $id): JobDTO
     {
-        $jobModel = new JobModel();
-        $employerModel = new EmployerModel();
-        $commentModel = new CommentModel();
+        $employerModel = new EmployerModel(new QueryDirector());
+        $commentModel = new CommentModel(new QueryDirector());
 
-        $job = $jobModel->getJobById($id);
+        $job = $this->model->getJobById($id);
         $employer = $employerModel->getEmployerById($job['employerId']);
         $comments = $commentModel->getCommentsForJob($job['jobId']);
 
@@ -91,8 +96,7 @@ class JobRepository implements IRepositoryMethods
             throw new APIException('validation error', 400, $errors);
         }
 
-        $jobModel = new JobModel();
-        $newJob = $jobModel->createJob($data);
+        $newJob = $this->model->createJob($data);
 
         if (!$newJob) {
             throw new APIException('something went wrong with creating the job', 500);
@@ -112,8 +116,7 @@ class JobRepository implements IRepositoryMethods
             throw new APIException('validation error', 400, $errors);
         }
 
-        $jobModel = new JobModel();
-        $updatedJob = $jobModel->updateJob($id, $data);
+        $updatedJob = $this->model->updateJob($id, $data);
 
         if (!$updatedJob) {
             throw new APIException('something went wrong with updating the job', 500);
@@ -124,7 +127,6 @@ class JobRepository implements IRepositoryMethods
 
     public function delete(string $id): bool
     {
-        $jobModel = new JobModel();
-        return $jobModel->deleteJob($id);
+        return $this->model->deleteJob($id);
     }
 }

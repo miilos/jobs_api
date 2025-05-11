@@ -9,14 +9,19 @@ use Milos\JobsApi\Mappers\EmployerMapper;
 use Milos\JobsApi\Mappers\JobMapper;
 use Milos\JobsApi\Models\EmployerModel;
 use Milos\JobsApi\Models\JobModel;
+use Milos\JobsApi\Services\Validator;
 
-class EmployerRepository implements IRepositoryMethods
+class EmployerRepository implements Repository
 {
+    private EmployerModel $model;
+
+    public function __construct(EmployerModel $model){
+        $this->model = $model;
+    }
 
     public function getAll(): array
     {
-        $employerModel = new EmployerModel();
-        $employers = $employerModel->getAllEmployers();
+        $employers = $this->model->getAllEmployers();
 
         $employerDTOs = [];
         foreach ($employers as $employer) {
@@ -28,8 +33,7 @@ class EmployerRepository implements IRepositoryMethods
 
     public function getById(string $id): object
     {
-        $employerModel = new EmployerModel();
-        $employer = $employerModel->getEmployerById($id);
+        $employer = $this->model->getEmployerById($id);
 
         $jobModel = new JobModel();
         $jobs = $jobModel->getJobsByEmployer($id);
@@ -53,9 +57,22 @@ class EmployerRepository implements IRepositoryMethods
         return $employerDTO;
     }
 
-    public function create(array $data): JobDTO
+    public function create(array $data): EmployerDTO
     {
-        // TODO: Implement create() method.
+        $validator = new Validator($data);
+        $errors = $validator->validate('employers');
+
+        if ($errors) {
+            throw new APIException('validation error', 400, $errors);
+        }
+
+        $newEmployer = $this->model->createEmployer($data);
+
+        if (!$newEmployer) {
+            throw new APIException('something went wrong with creating the employer', 500);
+        }
+
+        return EmployerMapper::toDTO($newEmployer);
     }
 
     public function update(string $id, array $data): JobDTO

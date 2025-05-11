@@ -17,7 +17,7 @@ class UserMapper
             role: $data['role'],
         );
     }
-+
+
     public static function fromStdClass(\stdClass $userObj): UserDTO
     {
         return new UserDTO(

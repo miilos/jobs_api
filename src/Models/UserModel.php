@@ -3,20 +3,22 @@
 namespace Milos\JobsApi\Models;
 
 use Milos\JobsApi\Core\QueryBuilder;
+use Milos\JobsApi\Core\QueryDirector;
 use Ramsey\Uuid\Uuid;
 
-class UserModel
+class UserModel extends Model
 {
+    public function __construct(QueryDirector $director)
+    {
+        parent::__construct($director);
+    }
+
     public function signup(array $data): array
     {
         $id = Uuid::uuid4();
         $password = password_hash($data['password'], PASSWORD_BCRYPT);
 
-        $qb = new QueryBuilder();
-        $qb->insert();
-        $qb->table('users');
-        $qb->fields('userId', 'firstName', 'lastName', 'email', 'password', 'field');
-        $qb->values([
+        $status = $this->director->create('users', [
             'userId' => $id,
             'firstName' => $data['firstName'],
             'lastName' => $data['lastName'],
@@ -24,7 +26,6 @@ class UserModel
             'password' => $password,
             'field' => $data['field']
         ]);
-        $status = $qb->execute();
 
         if ($status) {
             return $this->getUserById($id);
@@ -36,33 +37,11 @@ class UserModel
 
     public function getUserById(string $id): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('userId', 'firstName', 'lastName', 'email', 'field', 'role');
-        $qb->table('users');
-        $qb->where(['userId' => $id]);
-        $user = $qb->execute('one');
-
-        if (!$user) {
-            return [];
-        }
-        else {
-            return $user;
-        }
+        return $this->director->getOne('users', ['userId', 'firstName', 'lastName', 'email', 'field', 'role'], ['userId' => $id]);
     }
 
     public function getUserByEmail(string $email): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('users');
-        $qb->where(['email' => $email]);
-        $user = $qb->execute('one');
-
-        if (!$user) {
-            return [];
-        }
-        else {
-            return $user;
-        }
+        return $this->director->getOne('users', ['*'], ['email' => $email]);
     }
 }

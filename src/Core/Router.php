@@ -143,7 +143,8 @@ class Router
             $response = null;
 
             if (class_exists($class) && method_exists($class, $method)) {
-                $class = new $class();
+                $diContainer = new DIContainer();
+                $class = $diContainer->get($class);
 
                 // if there's middleware registered to a function with this name, call the mw stack
                 if (isset($this->middleware[$method])) {
@@ -188,7 +189,8 @@ class Router
             $response = new JSONResponse([
                 'status' => 'error',
                 'message' => 'nesto ne radi!',
-                'details' => $t->getMessage()
+                'details' => $t->getMessage(),
+                'stackTrace' => $t->getTraceAsString()
             ]);
             $response->statusCode(500);
         }

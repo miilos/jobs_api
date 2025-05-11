@@ -82,6 +82,11 @@ class Validator
                 ['field' => 'field', 'rules' => [Validator::REQUIRED]],
                 ['field' => 'password', 'rules' => [Validator::REQUIRED, [Validator::MIN_LENGTH, 8]]],
                 ['field' => 'passwordConfirm', 'rules' => [Validator::REQUIRED, [Validator::MATCHES, 'password']]],
+            ],
+            'employers' => [
+                ['field' => 'employerName', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'basedIn', 'rules' => [Validator::REQUIRED]],
+                ['field' => 'employerDescription', 'rules' => [Validator::REQUIRED]],
             ]
         ];
     }

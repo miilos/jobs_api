@@ -3,15 +3,17 @@
 namespace Milos\JobsApi\Models;
 
 use Milos\JobsApi\Core\QueryBuilder;
+use Milos\JobsApi\Core\QueryDirector;
 
-class CommentModel
+class CommentModel extends Model
 {
+    public function __construct(QueryDirector $director)
+    {
+        parent::__construct($director);
+    }
+
     public function getCommentsForJob($jobId): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('comments');
-        $qb->where(['job_id' => $jobId]);
-        return $qb->execute();
+        return $this->director->getAll('comments', ['*'], ['job_id' => $jobId]);
     }
 }

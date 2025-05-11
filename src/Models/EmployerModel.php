@@ -2,30 +2,41 @@
 
 namespace Milos\JobsApi\Models;
 
-use Milos\JobsApi\Core\QueryBuilder;
+use Milos\JobsApi\Core\QueryDirector;
+use Ramsey\Uuid\Nonstandard\Uuid;
 
-class EmployerModel
+class EmployerModel extends Model
 {
+    public function __construct(QueryDirector $director)
+    {
+        parent::__construct($director);
+    }
+
     public function getAllEmployers(): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('employers');
-        return $qb->execute();
+        return $this->director->getAll('employers', ['*']);
     }
 
     public function getEmployerById(string $id): array
     {
-        $qb = new QueryBuilder();
-        $qb->select('*');
-        $qb->table('employers');
-        $qb->where(['employerId' => $id]);
-        $employer = $qb->execute('one');
+        return $this->director->getOne('employers', ['*'], ['employerId' => $id]);
+    }
 
-        if (!$employer) {
+    public function createEmployer(array $data): array
+    {
+        $id = Uuid::uuid4();
+        $status = $this->director->create('employers', [
+            'employerId' => $id,
+            'employerName' => $data['employerName'],
+            'basedIn' => $data['basedIn'],
+            'employerDescription' => $data['employerDescription']
+        ]);
+
+        if ($status) {
+            return $this->getEmployerById($id);
+        }
+        else {
             return [];
         }
-
-        return $employer;
     }
 }

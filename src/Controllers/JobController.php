@@ -13,11 +13,17 @@ use Milos\JobsApi\Services\Filter;
 
 class JobController
 {
+    private JobRepository $repo;
+
+    public function __construct(JobRepository $repo)
+    {
+        $this->repo = $repo;
+    }
+
     #[Route(method: 'get', path: '/api/v1/jobs', name: 'getAllJobs')]
     public function getAllJobs(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
-        $jobs = $jobRepo->getAll();
+        $jobs = $this->repo->getAll();
 
         return new JSONResponse([
             'status' => 'success',
@@ -31,9 +37,8 @@ class JobController
     #[Route(method: 'get', path: '/api/v1/jobs/{id}', name: 'getJobById')]
     public function getJobById(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
         $id = $req->getUrlParams()['id'];
-        $job = $jobRepo->getById($id);
+        $job = $this->repo->getById($id);
 
         return new JSONResponse([
             'status' => 'success',
@@ -46,9 +51,8 @@ class JobController
     #[Route(method: 'post', path: '/api/v1/jobs/filter', name: 'filterJobs')]
     public function filterJobs(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
         $filter = Filter::create($req->body);
-        $filteredJobs = $jobRepo->filterJobs($filter);
+        $filteredJobs = $this->repo->filterJobs($filter);
 
         return new JSONResponse([
             'status' => 'success',
@@ -64,8 +68,7 @@ class JobController
     #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function createJob(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
-        $newJob = $jobRepo->create($req->body);
+        $newJob = $this->repo->create($req->body);
 
         $res = new JSONResponse([
             'status' => 'success',
@@ -83,9 +86,8 @@ class JobController
     #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function updateJob(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
         $id = $req->getUrlParams()['id'];
-        $updatedJob = $jobRepo->update($id, $req->body);
+        $updatedJob = $this->repo->update($id, $req->body);
 
         return new JSONResponse([
             'status' => 'success',
@@ -101,9 +103,8 @@ class JobController
     #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
     public function deleteJob(Request $req): JSONResponse
     {
-        $jobRepo = new JobRepository();
         $id = $req->getUrlParams()['id'];
-        $status = $jobRepo->delete($id);
+        $status = $this->repo->delete($id);
 
         if (!$status) {
             throw new APIException('no job deleted!', 400);

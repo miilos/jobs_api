@@ -4,7 +4,7 @@ namespace Milos\JobsApi\Repositories;
 
 use Milos\JobsApi\DTOs\DTOInterface;
 
-interface IRepositoryMethods
+interface Repository
 {
     public function getAll(): array;
     public function getById(string $id): object;
