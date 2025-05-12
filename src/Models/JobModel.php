@@ -2,7 +2,6 @@
 
 namespace Milos\JobsApi\Models;
 
-use Milos\JobsApi\Core\QueryBuilder;
 use Milos\JobsApi\Core\QueryDirector;
 use Ramsey\Uuid\Uuid;
 

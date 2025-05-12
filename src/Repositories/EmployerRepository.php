@@ -75,13 +75,32 @@ class EmployerRepository implements Repository
         return EmployerMapper::toDTO($newEmployer);
     }
 
-    public function update(string $id, array $data): JobDTO
+    public function update(string $id, array $data): EmployerDTO
     {
-        // TODO: Implement update() method.
+        $validator = new Validator($data);
+        $errors = $validator->validate('employers', options: [
+            'check' => array_keys($data)
+        ]);
+
+        if ($errors) {
+            throw new APIException('validation error', 400, $errors);
+        }
+
+        $updatedEmployer = $this->model->updateEmployer($id, $data);
+
+        if (!$updatedEmployer) {
+            throw new APIException('something went wrong with updating the employer', 500);
+        }
+
+        return EmployerMapper::toDTO($updatedEmployer);
     }
 
-    public function delete(string $id): bool
+    public function delete(string $id): void
     {
-        // TODO: Implement delete() method.
+        $status = $this->model->deleteEmployer($id);
+
+        if (!$status) {
+            throw new APIException('no employer deleted!', 400);
+        }
     }
 }

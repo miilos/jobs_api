@@ -3,7 +3,6 @@
 namespace Milos\JobsApi\Core;
 
 use Milos\JobsApi\DTOs\UserDTO;
-use Milos\JobsApi\Services\Filter;
 
 class Request
 {
@@ -40,5 +39,29 @@ class Request
     public function getPath(): string
     {
         return explode('?', $_SERVER['REQUEST_URI'])[0];
+    }
+
+    public function getSortProperties(): array
+    {
+        $sortProps = [];
+
+        if (isset($_GET['sort'])) {
+            $props = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_SPECIAL_CHARS);
+            $sortProps['properties'] = explode(',', $props);
+        }
+
+        if (isset($_GET['sortDirection'])) {
+            $sortProps['direction'] = filter_input(INPUT_GET, 'sortDirection', FILTER_SANITIZE_SPECIAL_CHARS);
+
+            // in the case of invalid input, ignore it and just set the direction to 'asc'
+            if ($sortProps['direction'] !== 'asc' && $sortProps['direction'] !== 'desc') {
+                $sortProps['direction'] = 'asc';
+            }
+        }
+        else {
+            $sortProps['direction'] = 'asc';
+        }
+
+        return $sortProps;
     }
 }

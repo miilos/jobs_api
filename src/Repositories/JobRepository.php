@@ -12,6 +12,7 @@ use Milos\JobsApi\Models\CommentModel;
 use Milos\JobsApi\Models\EmployerModel;
 use Milos\JobsApi\Models\JobModel;
 use Milos\JobsApi\Services\Filter;
+use Milos\JobsApi\Services\Sorter;
 use Milos\JobsApi\Services\Validator;
 
 class JobRepository implements Repository
@@ -44,6 +45,12 @@ class JobRepository implements Repository
         }
 
         return $jobDTOs;
+    }
+
+    public function sort(array $objectDTOs, array $sortProps): array
+    {
+        $sorter = new Sorter($sortProps['properties'], $sortProps['direction']);
+        return $sorter->sort($objectDTOs);
     }
 
     public function getById(string $id): JobDTO
@@ -125,8 +132,12 @@ class JobRepository implements Repository
         return JobMapper::toDTO($updatedJob);
     }
 
-    public function delete(string $id): bool
+    public function delete(string $id): void
     {
-        return $this->model->deleteJob($id);
+        $status = $this->model->deleteJob($id);
+
+        if (!$status) {
+            throw new APIException('no job deleted!', 400);
+        }
     }
 }

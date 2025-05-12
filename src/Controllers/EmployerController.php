@@ -2,6 +2,7 @@
 
 namespace Milos\JobsApi\Controllers;
 
+use Milos\JobsApi\Core\Exceptions\APIException;
 use Milos\JobsApi\Core\Request;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Route;
@@ -61,6 +62,39 @@ class EmployerController
             ]
         ]);
         $res->statusCode(201);
+        return $res;
+    }
+
+    #[Route(method: 'patch', path: '/api/v1/employers/{id}', name: 'updateEmployer')]
+    #[Middleware(function: [AuthMiddleware::class, 'authorize'])]
+    #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
+    public function updateEmployer(Request $req): JSONResponse
+    {
+        $id = $req->getUrlParams()['id'];
+        $updatedEmployer = $this->repo->update($id, $req->body);
+
+        return new JSONResponse([
+           'status' => 'success',
+           'message' => 'employer successfully updated!',
+           'data' => [
+               'employer' => $updatedEmployer
+           ]
+        ]);
+    }
+
+    #[Route(method: 'delete', path: '/api/v1/employers/{id}', name: 'deleteEmployer')]
+    #[Middleware(function: [AuthMiddleware::class, 'authorize'])]
+    #[Middleware(function: [AuthMiddleware::class, 'protect'], args: ['allowedRoles' => ['admin']])]
+    public function deleteEmployer(Request $req): JSONResponse
+    {
+        $id = $req->getUrlParams()['id'];
+        $this->repo->delete($id);
+
+        $res = new JSONResponse([
+            'status' => 'success',
+            'message' => 'employer successfully deleted!',
+        ]);
+        $res->statusCode(204);
         return $res;
     }
 }

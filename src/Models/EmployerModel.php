@@ -39,4 +39,21 @@ class EmployerModel extends Model
             return [];
         }
     }
+
+    public function updateEmployer(string $id, array $data): array
+    {
+        $status = $this->director->update('employers', $data, ['employerId' => $id]);
+
+        if ($status) {
+            return $this->getEmployerById($id);
+        }
+        else {
+            return [];
+        }
+    }
+
+    public function deleteEmployer(string $id): bool
+    {
+        return $this->director->delete('employers', ['employerId' => $id]);
+    }
 }

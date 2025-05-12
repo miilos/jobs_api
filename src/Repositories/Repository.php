@@ -10,5 +10,5 @@ interface Repository
     public function getById(string $id): object;
     public function create(array $data): DTOInterface;
     public function update(string $id, array $data): DTOInterface;
-    public function delete(string $id): bool;
+    public function delete(string $id): void;
 }
