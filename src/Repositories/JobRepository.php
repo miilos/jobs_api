@@ -12,12 +12,15 @@ use Milos\JobsApi\Models\CommentModel;
 use Milos\JobsApi\Models\EmployerModel;
 use Milos\JobsApi\Models\JobModel;
 use Milos\JobsApi\Services\Filter;
+use Milos\JobsApi\Services\SortableCollection;
 use Milos\JobsApi\Services\Sorter;
 use Milos\JobsApi\Services\Validator;
 
 class JobRepository implements Repository
 {
     private JobModel $model;
+
+    use SortableCollection;
 
     public function __construct(JobModel $model)
     {
@@ -45,12 +48,6 @@ class JobRepository implements Repository
         }
 
         return $jobDTOs;
-    }
-
-    public function sort(array $objectDTOs, array $sortProps): array
-    {
-        $sorter = new Sorter($sortProps['properties'], $sortProps['direction']);
-        return $sorter->sort($objectDTOs);
     }
 
     public function getById(string $id): JobDTO

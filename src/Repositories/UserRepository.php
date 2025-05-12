@@ -49,4 +49,31 @@ class UserRepository
 
         return UserMapper::toDTO($user);
     }
+
+    public function generatePasswordResetToken(string $id): string
+    {
+        $token = bin2hex(random_bytes(16));
+        $this->model->setPasswordResetToken($id, $token);
+        return $token;
+    }
+
+    public function resetPassword(string $token, array $data): void
+    {
+        $user = $this->model->getUserByPasswordResetToken($token);
+
+        if (!$user) {
+            throw new APIException('invalid password reset token', 400);
+        }
+
+        $validator = new Validator($data);
+        $errors = $validator->validate('users', options: [
+            'check' => array_keys($data)
+        ]);
+
+        if ($errors) {
+            throw new APIException('validation error', 400, $errors);
+        }
+
+        $this->model->updatePassword($user['userId'], $data['password']);
+    }
 }

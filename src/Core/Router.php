@@ -5,6 +5,7 @@ namespace Milos\JobsApi\Core;
 use Milos\JobsApi\Core\Responses\JSONResponse;
 use Milos\JobsApi\Core\Exceptions\APIException;
 use Milos\JobsApi\Middleware\Middleware;
+use PHPMailer\PHPMailer\Exception;
 use ReflectionClass;
 
 class Router
@@ -182,6 +183,14 @@ class Router
                 'status' => 'error',
                 'message' => 'greska pri komunikaciji sa bazom!',
                 'details' => $pdoEx->getMessage()
+            ]);
+            $response->statusCode(500);
+        }
+        catch (Exception $mailEx) {
+            $response = new JSONResponse([
+                'status' => 'error',
+                'message' => 'error sending email!',
+                'details' => $mailEx->getMessage()
             ]);
             $response->statusCode(500);
         }

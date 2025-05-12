@@ -44,4 +44,39 @@ class UserModel extends Model
     {
         return $this->director->getOne('users', ['*'], ['email' => $email]);
     }
+
+    public function setPasswordResetToken(string $id, string $token): bool
+    {
+        return $this->director->update(
+            'users',
+            [
+                'passwordResetToken' => $token,
+                'resetExpiresAt' => date('Y-m-d H:i:s', time() + (int) $_ENV['RESET_TOKEN_EXPIRES_IN'])
+            ],
+            ['userId' => $id]
+        );
+    }
+
+    public function getUserByPasswordResetToken(string $token): array
+    {
+        $qb = new QueryBuilder();
+        $qb->select('*');
+        $qb->table('users');
+        $qb->where(['passwordResetToken' => $token]);
+        $qb->where(['resetExpiresAt' => date('Y-m-d H:i:s', time())], operation: '>');
+        $user = $qb->execute('one');
+        return $user ? $user : [];
+    }
+
+    public function updatePassword(string $id, string $password): bool
+    {
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        return $this->director->update('users', [
+            'password' => $hash,
+            'passwordResetToken' => null,
+            'resetExpiresAt' => null
+        ],
+        ['userId' => $id]);
+    }
 }
