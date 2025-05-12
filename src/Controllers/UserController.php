@@ -52,4 +52,17 @@ class UserController
             ]
         ]);
     }
+
+    #[Route(method: 'get', path: '/api/v1/logout', name: 'logout')]
+    public function logout(Request $req): JSONResponse
+    {
+        JWTHandler::deleteCookie();
+
+        $res = new JSONResponse([
+            'status' => 'success',
+            'message' => 'logged out!'
+        ]);
+        $res->statusCode(204);
+        return $res;
+    }
 }

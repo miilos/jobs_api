@@ -25,7 +25,7 @@ class JobController
         $jobs = $this->repo->getAll();
 
         $sortProps = $req->getSortProperties();
-        if ($sortProps) {
+        if (isset($sortProps['sort'])) {
             $jobs = $this->repo->sort($jobs, $sortProps);
         }
 

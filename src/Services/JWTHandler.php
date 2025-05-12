@@ -2,7 +2,6 @@
 
 namespace Milos\JobsApi\Services;
 
-use Cassandra\DateTime;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -28,6 +27,14 @@ class JWTHandler
             'secure' => true,
             'samesite' => 'Strict',
         ]);
+    }
+
+    public static function deleteCookie(): void
+    {
+        if (isset($_COOKIE['jwt'])) {
+            unset($_COOKIE['jwt']);
+            setcookie('jwt', '', time() - 3600, '/');
+        }
     }
 
     public static function getTokenFromCookie(): string
